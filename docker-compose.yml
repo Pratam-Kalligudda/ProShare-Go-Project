@@ -1,0 +1,48 @@
+services:
+  #backend image
+  proshare-backend:
+    build: ./
+    container_name: proshare
+    ports:
+      - '8080:8080'
+    env_file: 
+      - "./env/backend.env"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+  #redis image
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass yourpassword
+    volumes:
+      - cache:/data
+  #postgres image
+  postgres:
+    image: 'postgres:latest'
+    container_name: postgres
+    ports:
+      - '5432:5432'
+    env_file:
+      - "./env/postgres.env" 
+  #rabbitmq image
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    env_file:
+      - "./env/rabbitmq.env"
+    volumes:
+      - 'rabbitmq_data:/data'
+
+    
+volumes:
+  #cache is the named volume set to data in the redis container
+  cache:
+  rabbitmq_data:
